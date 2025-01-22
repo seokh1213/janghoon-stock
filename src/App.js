@@ -64,22 +64,6 @@ const DateInput = styled.input`
     }
 `;
 
-const Button = styled.button`
-    padding: 8px 16px;
-    background: #007bff;
-    color: white;
-    font-size: 0.9rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    max-width: 120px;
-
-    &:hover {
-        background: #0056b3;
-    }
-`;
-
 const Table = styled.table`
     width: 100%;
     border-collapse: collapse;
@@ -114,7 +98,7 @@ const rankEmojis = {
 const App = () => {
   const [stockData, setStockData] = useState([]);
   const [stockChartData, setStockChartData] = useState([]);
-  const [startDate, setStartDate] = useState("2025-01-03"); // 기본 시작 날짜
+  const [startDate] = useState("2025-01-03"); // 기본 시작 날짜
   const symbols = ["ISRG", "TSLL", "BOTZ", "XOM", "BBAI"]; // 5개 종목
 
   // 미국 주식시장 공휴일 (예시: 2025년 공휴일)
@@ -217,9 +201,8 @@ const App = () => {
         <DateInput
           type="date"
           value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          readOnly
         />
-        <Button onClick={fetchStockData}>업데이트</Button>
       </Controls>
 
       <Table>

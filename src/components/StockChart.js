@@ -1,5 +1,23 @@
 import React from "react";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import styled from "styled-components";
+
+const NoDataMessage = styled.div`
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  color: #6c757d;
+  font-size: 1.2rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    padding: 15px;
+  }
+`;
 
 // 주식별 고정된 색상 설정 함수
 const getColor = (symbol) => {
@@ -30,6 +48,10 @@ const transformData = (data) => {
 };
 
 const StockChart = ({ data }) => {
+  if (!data?.length) {
+    return <NoDataMessage>📊 데이터 로딩 중...</NoDataMessage>;
+  }
+
   const combinedData = transformData(data);
 
   return (
