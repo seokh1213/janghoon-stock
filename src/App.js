@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import StockChart from "./components/StockChart";
+import React, {useState, useEffect, useCallback} from "react";
 import styled from "styled-components";
+import StockChart from "./components/StockChart";
 
 // 반응형 스타일 적용
 const Container = styled.div`
@@ -8,7 +8,7 @@ const Container = styled.div`
     margin: 40px auto;
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     background: #ffffff;
     font-family: "Inter", sans-serif;
 
@@ -60,7 +60,7 @@ const DateInput = styled.input`
 
     &:focus {
         border-color: #007bff;
-        box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5);
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
     }
 `;
 
@@ -102,8 +102,18 @@ const Table = styled.table`
     }
 `;
 
+// 순위별 이모지 설정
+const rankEmojis = {
+  1: "👑",  // 1등: 왕관
+  2: "🥈",  // 2등: 은메달
+  3: "🥉",  // 3등: 동메달
+  4: "☕",  // 4등: 커피
+  5: "🍚",  // 5등: 밥
+};
+
 const App = () => {
   const [stockData, setStockData] = useState([]);
+  const [stockChartData, setStockChartData] = useState([]);
   const [startDate, setStartDate] = useState("2025-01-03"); // 기본 시작 날짜
   const symbols = ["ISRG", "TSLL", "BOTZ", "XOM", "BBAI"]; // 5개 종목
 
@@ -123,7 +133,7 @@ const App = () => {
   };
 
   // 주식 데이터 fetch
-  const fetchStockData = async () => {
+  const fetchStockData = useCallback(async () => {
     try {
       const firstBusinessDay = getFirstBusinessDay(startDate);
       const stockPromises = symbols.map((symbol) =>
@@ -134,10 +144,13 @@ const App = () => {
       const results = await Promise.all(stockPromises);
       const formattedData = formatStockData(results, firstBusinessDay);
       setStockData(formattedData);
+
+      const formattedChartData = formatStockDataForChart(results, firstBusinessDay);
+      setStockChartData(formattedChartData);
     } catch (error) {
       console.error("Error fetching stock data:", error);
     }
-  };
+  }, [startDate]);
 
   // 데이터를 종목별로 가공
   const formatStockData = (results, firstBusinessDay) => {
@@ -161,9 +174,40 @@ const App = () => {
     });
   };
 
+  const formatStockDataForChart = (results, firstBusinessDay) => {
+    return results.map((data, index) => {
+      const prices = data.map((entry) => ({
+        date: new Intl.DateTimeFormat("en-CA").format(new Date(entry.t * 1000)),
+        close: entry.c,
+      }));
+
+      // 기준일 이후 데이터 필터링
+      const filteredPrices = prices.filter((entry) => entry.date >= firstBusinessDay);
+
+      // 변화율 추가
+      const transformedData = filteredPrices.map((entry, i, arr) => {
+        const startPrice = arr[0]?.close || 0;
+        const percentageChange = startPrice
+          ? ((entry.close - startPrice) / startPrice) * 100
+          : 0;
+
+        return {
+          date: entry.date,
+          close: entry.close,
+          percentage: percentageChange,
+        };
+      });
+
+      return {
+        symbol: symbols[index],
+        prices: transformedData,
+      };
+    });
+  };
+
   useEffect(() => {
     fetchStockData();
-  }, [startDate]);
+  }, [fetchStockData]);
 
   return (
     <Container>
@@ -194,10 +238,10 @@ const App = () => {
           .map((stock, index) => (
             <tr key={stock.symbol}>
               <td>{index + 1}</td>
-              <td>{stock.symbol}</td>
+              <td>{rankEmojis[index + 1]}{stock.symbol}</td>
               <td>${stock.startPrice.toFixed(2)}</td>
               <td>${stock.endPrice.toFixed(2)}</td>
-              <td style={{ color: stock.percentageChange > 0 ? "green" : "red" }}>
+              <td style={{color: stock.percentageChange > 0 ? "green" : "red"}}>
                 {stock.percentageChange.toFixed(2)}%
               </td>
             </tr>
@@ -205,7 +249,7 @@ const App = () => {
         </tbody>
       </Table>
 
-      {/*<StockChart data={???} />*/}
+      <StockChart data={stockChartData}/>
     </Container>
   );
 };

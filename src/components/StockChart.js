@@ -14,14 +14,6 @@ const getColor = (symbol) => {
   return colorMap[symbol] || "#000000"; // 기본값은 검정색
 };
 
-// 순위별 이모지 설정
-const rankEmojis = {
-  1: "👑",  // 1등: 왕관
-  2: "🥈",  // 2등: 은메달
-  3: "🥉",  // 3등: 동메달
-  4: "☕",  // 4등: 커피
-  5: "🍚",  // 5등: 밥
-};
 
 // 데이터 변환 함수
 const transformData = (data) => {
@@ -37,43 +29,12 @@ const transformData = (data) => {
   });
 };
 
-// 주식 순위 계산 함수
-const getStockRanking = (entry, data) => {
-  return data
-    .map((stock) => ({
-      symbol: stock.symbol,
-      percentage: entry[stock.symbol],
-    }))
-    .sort((a, b) => b.percentage - a.percentage);
-};
-
 const StockChart = ({ data }) => {
   const combinedData = transformData(data);
-  const latestRanking = getStockRanking(combinedData[combinedData.length - 1] || {}, data);
 
   return (
     <div>
       <h2>추이</h2>
-      <h3>1~5등 주식 순위:</h3>
-      <ul style={{ listStyleType: "none", paddingLeft: 0 }}>
-        {latestRanking.map((stock, index) => {
-          const rank = index + 1;
-          const emoji = rankEmojis[rank] || "";
-          const isHighlighted = rank === 4 || rank === 5;
-
-          return (
-            <li
-              key={stock.symbol}
-              style={{
-                fontWeight: isHighlighted ? "bold" : "normal",
-                color: isHighlighted ? "#FF4500" : "inherit", // 강조: 오렌지 색상
-              }}
-            >
-              {emoji} {stock.symbol} ({stock.percentage.toFixed(2)}%)
-            </li>
-          );
-        })}
-      </ul>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={combinedData}>
           <CartesianGrid strokeDasharray="3 3" />
