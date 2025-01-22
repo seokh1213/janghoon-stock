@@ -68,7 +68,7 @@ const StockChart = ({ data }) => {
               const closePrice = props.payload?.[`${name}_close`];
               return [
                 `${value.toFixed(2)}%`,
-                `Close: $${closePrice?.toFixed(2) || 0}`,
+                `종가: $${closePrice?.toFixed(2) || 0}`,
               ];
             }}
           />
